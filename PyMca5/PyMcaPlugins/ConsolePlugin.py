@@ -27,13 +27,34 @@ __author__ = "V.A. Sole - ESRF Data Analysis"
 __contact__ = "sole@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-import numpy
+import os, sys
+import math
+import numpy as np
 try:
     from PyMca5 import Plugin1DBase
 except ImportError:
     from . import Plugin1DBase
 
 from PyMca5.PyMcaGui.misc  import QIPythonWidget
+
+
+def _get_ipy_mods():
+    """push useful/standard modules to the console namespace"""
+    _mods = {'os' : os,
+             'sys' : sys,
+             'np' : np,
+             'math' : math}
+
+    return _mods
+
+def _get_ipy_mods_text():
+    """show info text of modules loaded into the console"""
+
+    _imods = 'Imported modules in this console:\n'+\
+             'os, sys : System utilities\n'+\
+             'math, np : Math and Numpy\n'
+
+    return _imods
 
 
 class ConsolePlugin(Plugin1DBase.Plugin1DBase):
@@ -79,11 +100,15 @@ class ConsolePlugin(Plugin1DBase.Plugin1DBase):
     def _embed(self):
         if self._widget is None:
             try:
-                banner = "%s Console 1D Window" % self.windowTitle()
+                banner = "%s Console 1D Window\n\n" % self.windowTitle()
             except:
-                banner = "Console 1D Window"
+                banner = "Console 1D Window\n\n"
             self._widget = QIPythonWidget.QIPythonWidget(customBanner=banner)
-            self._widget.pushVariables({"plugin":self})
+            self._widget.pushVariables(_get_ipy_mods())
+            self._widget.pushVariables({"pw" : self})
+            self._widget.printText(_get_ipy_mods_text())
+            self._widget.printText("pw : Plot window")
+            
         self._widget.show()
         self._widget.raise_()
 
